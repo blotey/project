@@ -1,0 +1,6 @@
+img1.jpg|a dog is playing with a ball
+img1.jpg|a happy dog in the park
+img2.jpg|a person riding a bicycle on the road
+img2.jpg|a biker on a cycle path
+img3.jpg|a scenic beach with waves
+img3.jpg|a beach during sunset
