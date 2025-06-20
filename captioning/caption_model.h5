@@ -1,11 +1,18 @@
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, UpSampling2D
+from tensorflow.keras.applications import InceptionV3
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, Embedding, LSTM, Add
 
-segmentation_model = Sequential([
-    Conv2D(32, (3,3), activation='relu', padding='same', input_shape=(128,128,3)),
-    MaxPooling2D((2,2)),
-    Conv2D(64, (3,3), activation='relu', padding='same'),
-    UpSampling2D((2,2)),
-    Conv2D(1, (3,3), activation='sigmoid', padding='same')
-])
-segmentation_model.save('segmentation/segmentation_model.h5')
+# Build a basic captioning model structure
+encoder = InceptionV3(weights='imagenet')
+encoder = Model(encoder.input, encoder.layers[-2].output)
+
+inputs1 = tf.keras.Input(shape=(2048,))
+fe1 = Dense(256, activation='relu')(inputs1)
+inputs2 = tf.keras.Input(shape=(34,))
+se1 = Embedding(10000, 256, mask_zero=True)(inputs2)
+se2 = LSTM(256)(se1)
+decoder1 = Add()([fe1, se2])
+decoder2 = Dense(256, activation='relu')(decoder1)
+outputs = Dense(10000, activation='softmax')(decoder2)
+caption_model = Model(inputs=[inputs1, inputs2], outputs=outputs)
+caption_model.save('captioning/caption_model.h5')
