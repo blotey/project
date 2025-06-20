@@ -1,0 +1,7 @@
+import pickle
+from tensorflow.keras.preprocessing.text import Tokenizer
+
+tokenizer = Tokenizer()
+tokenizer.fit_on_texts(["startseq", "endseq", "a", "the", "cat", "dog"])
+with open('captioning/tokenizer.pkl', 'wb') as f:
+    pickle.dump(tokenizer, f)
