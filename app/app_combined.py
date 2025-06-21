@@ -54,15 +54,18 @@ def generate_caption(feature, tokenizer, model, max_length=34, beam_index=3):
             top_preds = np.argsort(yhat[0, -1])[-beam_index:]
 
             for word in top_preds:
+                prob = yhat[0, -1][word]
                 new_seq = seq + [word]
-                new_score = score + np.log(yhat[0, -1][word] + 1e-9)
+                new_score = score + np.log(prob + 1e-9)
                 all_candidates.append([new_seq, new_score])
 
         sequences = sorted(all_candidates, key=lambda tup: tup[1], reverse=True)[:beam_index]
 
     final = sequences[0][0]
+    avg_confidence = np.exp(sequences[0][1] / len(final))  # reverse log-sum
+
     caption = [tokenizer.index_word.get(i, '') for i in final if i not in [0, start_token, end_token]]
-    return ' '.join(caption).strip()
+    return ' '.join(caption).strip(), avg_confidence
 
 # ---- Streamlit UI ----
 st.set_page_config(page_title="AI Image Analyzer", layout="wide")
