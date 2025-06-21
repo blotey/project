@@ -20,6 +20,15 @@ def load_captioning_components():
     encoder = tf.keras.Model(inputs=encoder.input, outputs=encoder.layers[-2].output)
     return caption_model, tokenizer, encoder
 
+# Download caption
+st.download_button(
+    label="📥 Download Caption",
+    data=caption,
+    file_name=f"{os.path.splitext(uploaded_file.name)[0]}_caption.txt",
+    mime="text/plain"
+)
+
+
 # ---- Load Segmentation Model ----
 @st.cache_resource
 def load_segmentation_model():
@@ -31,6 +40,17 @@ segmentation_model = load_segmentation_model()
 MAX_LENGTH = 34
 os.makedirs("output/masks", exist_ok=True)
 os.makedirs("output", exist_ok=True)
+
+
+# Download mask
+with open(mask_path, "rb") as mask_file:
+    st.download_button(
+        label="📥 Download Mask",
+        data=mask_file,
+        file_name=os.path.basename(mask_path),
+        mime="image/png"
+    )
+
 
 # ---- Feature Extraction ----
 def extract_image_features(image, encoder):
