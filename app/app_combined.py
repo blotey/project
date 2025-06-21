@@ -30,6 +30,7 @@ segmentation_model = load_segmentation_model()
 
 MAX_LENGTH = 34
 os.makedirs("output/masks", exist_ok=True)
+os.makedirs("output", exist_ok=True)
 
 # ---- Feature Extraction ----
 def extract_image_features(image, encoder):
@@ -39,7 +40,10 @@ def extract_image_features(image, encoder):
 
 # ---- Generate Caption using Beam Search ----
 def generate_caption(feature, tokenizer, model, max_length=34, beam_index=3):
-    start = [tokenizer.word_index['startseq']]
+    start_token = tokenizer.word_index.get('startseq', 1)
+    end_token = tokenizer.word_index.get('endseq', 2)
+
+    start = [start_token]
     sequences = [[start, 0.0]]
 
     while len(sequences[0][0]) < max_length:
@@ -57,8 +61,8 @@ def generate_caption(feature, tokenizer, model, max_length=34, beam_index=3):
         sequences = sorted(all_candidates, key=lambda tup: tup[1], reverse=True)[:beam_index]
 
     final = sequences[0][0]
-    caption = [tokenizer.index_word.get(i, '') for i in final if i > 0]
-    return ' '.join(caption).replace('startseq', '').replace('endseq', '').strip()
+    caption = [tokenizer.index_word.get(i, '') for i in final if i not in [0, start_token, end_token]]
+    return ' '.join(caption).strip()
 
 # ---- Streamlit UI ----
 st.set_page_config(page_title="AI Image Analyzer", layout="wide")
@@ -99,6 +103,7 @@ if uploaded_file:
             st.image(blended, caption="🟣 Overlay: Segmentation Mask", use_column_width=True)
 
         # Save mask
-        mask_path = f"output/masks/{uploaded_file.name.split('.')[0]}_mask.png"
+        base_name = os.path.splitext(uploaded_file.name)[0]
+        mask_path = f"output/masks/{base_name}_mask.png"
         pred_mask_img.save(mask_path)
         st.info(f"💾 Mask saved to: {mask_path}")
